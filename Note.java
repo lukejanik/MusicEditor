@@ -1,12 +1,13 @@
 package cs3500.music.model;
 
+import java.util.Comparator;
 import java.util.Objects;
 
 /**
  * Created by ashnashah on 10/17/16.
  */
 // To represent a note.
-public class Note {
+public class Note implements Comparable<Note> {
   private int duration;
   private int startBeat;
   private final Pitch pitch;
@@ -21,10 +22,10 @@ public class Note {
    */
   public Note(int duration, int startBeat, Pitch pitch, int octave) {
     if (octave < 0) {
-      throw new IllegalArgumentException("Octave can't be negative");
+      throw new IllegalArgumentException("octave can't be negative");
     }
     if (duration < 0 || startBeat < 0) {
-      throw new IllegalArgumentException("Duration or startBeat can't be negative");
+      throw new IllegalArgumentException("duration or startBeat can't be negative");
     }
     this.duration = duration;
     this.startBeat = startBeat;
@@ -32,6 +33,11 @@ public class Note {
     this.octave = octave;
   }
 
+  /**
+   * To construct a note of only the pitch and octave.
+   * @param pitch the pitch of this note.
+   * @param octave the octave of this note.
+   */
   public Note(Pitch pitch, int octave) {
     this.pitch = pitch;
     this.octave = octave;
@@ -53,10 +59,12 @@ public class Note {
     return this.pitch;
   }
 
+  // To return this note's startBeat.
   public int getStartBeat() {
     return this.startBeat;
   }
 
+  // To return this note's duration.
   public int getDuration() {
     return this.duration;
   }
@@ -79,5 +87,19 @@ public class Note {
   @Override
   public int hashCode() {
     return Objects.hash(this.octave);
+  }
+
+  @Override
+  public int compareTo(Note note) {
+    int ans = -1;
+    if (this.octave > note.octave) {
+      if (this.pitch.getValue() > note.pitch.getValue()) {
+        return 1;
+      }
+    }
+    else {
+      return -1;
+    }
+    return ans;
   }
 }

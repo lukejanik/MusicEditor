@@ -6,13 +6,25 @@ import java.util.List;
 /**
  * This is the class for MusicEditorModel.
  */
+
+/**
+ Changes made:
+ * The addNote(Note note) no longer throws an exception. If an exception were thrown, if the given
+ * note already existed in the beat, the note would not be able to be added to the beat. Not
+ * throwing the exception allows the note to be added. If the given note is longer than the note
+ * that already exists at that beat, the note will just be extended to accomodate for the length
+ * of the given note.
+ *
+ * Abstracted the methods to find the highest and lowest notes
+ */
+
 public final class MusicEditorModel implements IMusicEditorModel {
 
   // The beats in this piece of music.
   private List<Beat> beats;
 
   MusicEditorModel() {
-    this.beats = new ArrayList<Beat>();
+    this.beats = new ArrayList<>();
   }
 
   /**
@@ -24,7 +36,8 @@ public final class MusicEditorModel implements IMusicEditorModel {
    * @param note  The note to add to the piece
    */
   @Override
-  public void write(Note note) { this.addNote(note);
+  public void write(Note note) {
+    this.addNote(note);
   }
 
   /**
@@ -52,103 +65,104 @@ public final class MusicEditorModel implements IMusicEditorModel {
    * To combine a list of pieces either simultaneously or consecutively.
    *
    * @param type   The type of combination you want to make (simultaneous or consecutive).
-   * @param pieces The list of pieces that are to be combined.
+   * @param models The list of MusicEditorModels that are to be combined.
    */
   @Override
-  public MusicEditorModel combine(List<MusicEditorModel> pieces, CombineType type) {
+  public MusicEditorModel combine(List<MusicEditorModel> models, CombineType type) {
     switch (type) {
       case CONSECUTIVE:
         MusicEditorModel combo = new MusicEditorModel();
-        combo.appendPieces(pieces);
+        combo.appendModels(models);
         return combo;
 
       case SIMULTANEOUS:
         int maxLength = 0;
-        for (MusicEditorModel p : pieces) {
+        for (MusicEditorModel p : models) {
           if (p.size() > maxLength) {
             maxLength = p.size();
           }
         }
-        MusicEditorModel simulPiece = new MusicEditorModel();
-        simulPiece.addBeats(maxLength);
-        for (MusicEditorModel p : pieces) {
-          simulPiece.addMusicSymbols(p);
+        MusicEditorModel simultaneousModel = new MusicEditorModel();
+        simultaneousModel.addBeats(maxLength);
+        for (MusicEditorModel m : models) {
+          simultaneousModel.addNotesToModel(m);
         }
-        return simulPiece;
+        return simultaneousModel;
       default:
         throw new IllegalArgumentException("Invalid combination type");
     }
   }
 
   /**
-   * To return a string of the editorState of the given piece.
-   *
-   * @return String of the editorState of the given piece.
+   * To return a string of the state of this MusicEditorModel.
+   * @return a string of the current state of this MusicEditorModel.
    */
   @Override
   public String getEditorState() {
     return this.setUpState();
   }
 
-
   /**
-   * Adds the given music symbol to this piece. if the music symbol that is being added already
-   * exists in this piece?? Not throwing the exception would basically just ignore it and add only
-   * if its longer than existing beat Throwing the exception would prevent you from combining music
-   * if 2 notes appear in the same place
-   *
-   * @param sym the music symbol to be added to this piece.
+   * Adds the given note to this MusicEditorModel. If the note that is being added already exists
+   * in this MusicEditorModel, not throwing an exception would basically ignore it and add only
+   * if it's longer than the existing note. Throwing the exception would prevent you from
+   * combining music if two notes appear in the same place.
+   * @param note
    */
-  private void addNote(Note sym) throws IllegalArgumentException {
-    for (int i = sym.getStartBeat(); i < sym.getStartBeat() + sym.getDuration(); i += 1) {
+  private void addNote(Note note) {
+    for (int i = note.getStartBeat(); i < note.getStartBeat() + note.getDuration(); i += 1) {
       if (i >= beats.size()) {
         beats.add(new Beat());
       }
-      if (beats.get(i).containsSym(sym)) {
+      if (beats.get(i).containsNote(note)) {
         // do nothing
       }
-      beats.get(i).addMusicSym(sym);
+      beats.get(i).addNoteToBeat(note);
     }
   }
 
   // Returns the size of this piece's list of beats.
-  public int size() {
+  private int size() {
     return this.beats.size();
   }
 
   /**
-   * To replace an existing symbol with a new one in this piece.
-   *
-   * @param oldSym symbol to be replaced.
-   * @param newSym symbol to replace old symbol with.
+   * Edits this MusicEditorModel by replacing the given oldNote with the given newNote.
+   * Throws an exception if this MusicEditorModel does not contain the oldNote at the beat
+   * or the startBeat of the oldNote and newNote are not the same.
+   * @param oldNote The oldNote that is to be replaced.
+   * @param newNote The newNote that replaces the oldNote.
+   * @throws IllegalArgumentException Throws an exception if the oldNote does not exist at the
+   * beat or if the oldNote and newNote do not have the same startBeat.
    */
-  public void editNote(Note oldSym, Note newSym) throws IllegalArgumentException {
-    for (int i = oldSym.getStartBeat(); i < oldSym.getStartBeat() + oldSym.getDuration(); i += 1) {
-      if (!(beats.get(i).containsSym(oldSym))) {
-        throw new IllegalArgumentException("Piece does not contain the given oldSym.");
+  private void editNote(Note oldNote, Note newNote) throws IllegalArgumentException {
+    for (int i = oldNote.getStartBeat(); i < oldNote.getStartBeat() + oldNote.getDuration(); i += 1) {
+      if (!(beats.get(i).containsNote(oldNote))) {
+        throw new IllegalArgumentException("MusicEditorModel does not contain the given oldNote.");
       }
     }
-    if (oldSym.getStartBeat() != newSym.getStartBeat()) {
-      throw new IllegalArgumentException("The new music symbol must have the same startBeat " +
-              "as the one it is replacing.");
+    if (oldNote.getStartBeat() != newNote.getStartBeat()) {
+      throw new IllegalArgumentException("The newNote must have the same startBeat " +
+              "as the oldNote.");
     }
-    for (int i = oldSym.getStartBeat(); i < oldSym.getStartBeat() + oldSym.getDuration(); i += 1) {
-      beats.get(i).removeSym(oldSym);
+    for (int i = oldNote.getStartBeat(); i < oldNote.getStartBeat() + oldNote.getDuration(); i += 1) {
+      beats.get(i).removeNoteFromBeat(oldNote);
     }
-    this.addNote(newSym);
+    this.addNote(newNote);
   }
 
   /**
-   * To remove a symbol from this piece.
-   * @param sym The symbol to be removed.
-   * @throws IllegalArgumentException if the piece does not contain the given symbol.
+   * To remove the given note from this MusicEditorModel.
+   * @param note The given note that is to be removed from this MusicEditorModel.
+   * @throws IllegalArgumentException Throws an exception if the given note does not exist at the
+   * beat that is it's startBeat in this MusicEditorModel.
    */
-  public void removeNote(Note sym) throws IllegalArgumentException {
-    for (int i = sym.getStartBeat(); i < sym.getStartBeat() + sym.getDuration(); i += 1) {
-      if (!beats.get(i).containsSym(sym)) {
-        throw new IllegalArgumentException("Piece does not contain the given music symbol.");
+  private void removeNote(Note note) throws IllegalArgumentException {
+    for (int i = note.getStartBeat(); i < note.getStartBeat() + note.getDuration(); i += 1) {
+      if (!beats.get(i).containsNote(note)) {
+        throw new IllegalArgumentException("The MusicEditorModel does not contain the given note.");
       }
-      beats.get(i).removeSym(sym);
+      beats.get(i).removeNoteFromBeat(note);
     }
   }
 
@@ -157,141 +171,75 @@ public final class MusicEditorModel implements IMusicEditorModel {
    *
    * @param maxLength The length of the list of beats that will be created for this piece.
    */
-  public void addBeats(int maxLength) {
+  private void addBeats(int maxLength) {
     for (int i = 0; i < maxLength; i += 1) {
       this.beats.add(new Beat());
     }
   }
 
   /**
-   * Add musicSymbols to the given piece.
+   * To add all the notes from the given MusicEditorModel to this MusicEditorModel.
    *
-   * @param piece piece to which musicSymbols will be added.
+   * @param  model The MusicEditorModel whose notes will be added to this MusicEditorModel.
    */
-  public void addMusicSymbols(MusicEditorModel piece) {
-    for (int i = 0; i < piece.beats.size(); i += 1) {
-      beats.get(i).addSymbols(piece.beats.get(i));
+  private void addNotesToModel(MusicEditorModel model) {
+    for (int i = 0; i < model.beats.size(); i += 1) {
+      this.beats.get(i).addNotes(model.beats.get(i));
     }
   }
 
 
   /**
    * To add the beats from all the given pieces to this piece.
-   * @param pieces The pieces to be appended.
+   * @param models The models to be appended.
    */
-  public void appendPieces(List<MusicEditorModel> pieces) {
+  private void appendModels(List<MusicEditorModel> models) {
     // Add the first
-    for (Beat beat : pieces.get(0).beats) {
-      for (Note p : beat.getNotes()) {
-        this.addNote(p);
+    for (Beat beat : models.get(0).beats) {
+      for (Note note : beat.getNotes()) {
+        this.addNote(note);
       }
     }
-    int size = pieces.get(0).beats.size();
-    for (int i = 1; i < pieces.size(); i++) {
-      for (Beat beat : pieces.get(i).beats) {
-        for(Note p : beat.getNotes()) {
-          Note n = new Note(p.getDuration(), p.getStartBeat() + size, p.getPitch(), p.getOctave());
-          this.addNote(n);
+    int size = models.get(0).beats.size();
+    for (int i = 1; i < models.size(); i++) {
+      for (Beat beat : models.get(i).beats) {
+        for(Note n : beat.getNotes()) {
+          Note newNote = new Note(n.getDuration(), n.getStartBeat() + size,
+                  n.getPitch(), n.getOctave());
+          this.addNote(newNote);
         }
       }
-      size += pieces.get(i).beats.size();
+      size += models.get(i).beats.size();
     }
-
-
   }
 
-  // To find the lowest note in this piece.
-  private Note findLowestNoteInPiece() {
+  // To find the lowest or highest note in this MusicEditorModel.
+  private Note findExtreme(int compValue) {
     List<Note> allNotesInPiece = new ArrayList<>();
     for (int i = 0; i < beats.size(); i += 1) {
       allNotesInPiece.addAll(beats.get(i).allNotesInBeat(i));
     }
-    int minOctave = allNotesInPiece.get(0).getOctave();
-    List<Note> notesOfLowestOctave = new ArrayList<>();
+    Note extremeNote = allNotesInPiece.get(0);
     for (int i = 0; i < allNotesInPiece.size(); i += 1) {
-      if (allNotesInPiece.get(i).getOctave() < minOctave) {
-        minOctave = allNotesInPiece.get(i).getOctave();
+      if (extremeNote.compareTo(allNotesInPiece.get(i)) == compValue) {
+        extremeNote = allNotesInPiece.get(i);
       }
     }
-    // makes a list of all the notes of the lowest octave.
-    for (Note n : allNotesInPiece) {
-      if (n.getOctave() == minOctave) {
-        notesOfLowestOctave.add(n);
-      }
-    }
-    int minPitch = notesOfLowestOctave.get(0).getPitch().getValue();
-    Note minNote = notesOfLowestOctave.get(0);
-    for (Note n : notesOfLowestOctave) {
-      if (n.getPitch().getValue() < minPitch) {
-        minPitch = n.getPitch().getValue();
-        minNote = n;
-      }
-    }
-    return minNote;
+    return extremeNote;
   }
-
-  // To find the highest note in this piece.
-  private Note findHighestNoteInPiece() {
-    List<Note> allNotesInPiece = new ArrayList<>();
-    for (int i = 0; i < beats.size(); i += 1) {
-      allNotesInPiece.addAll(beats.get(i).allNotesInBeat(i));
-    }
-    int maxOctave = allNotesInPiece.get(0).getOctave();
-    List<Note> notesOfHighestOctave = new ArrayList<>();
-    for (int i = 0; i < allNotesInPiece.size(); i += 1) {
-      if (allNotesInPiece.get(i).getOctave() > maxOctave) {
-        maxOctave = allNotesInPiece.get(i).getOctave();
-      }
-    }
-    // makes a list of all the notes of the lowest octave.
-    for (Note n : allNotesInPiece) {
-      if (n.getOctave() == maxOctave) {
-        notesOfHighestOctave.add(n);
-      }
-    }
-    int maxPitch = notesOfHighestOctave.get(0).getPitch().getValue();
-    Note maxNote = notesOfHighestOctave.get(0);
-    for (Note n : notesOfHighestOctave) {
-      if (n.getPitch().getValue() > maxPitch) {
-        maxPitch = n.getPitch().getValue();
-        maxNote = n;
-      }
-    }
-    return maxNote;
-  }
-
-  // To find the maximum pitch value in this piece.
-  private int maxPitchValue() {
-    int maxPitchValue = -1;
-    for (Pitch p : Pitch.values()) {
-      if (p.getValue() > maxPitchValue) {
-        maxPitchValue = p.getValue();
-      }
-    }
-    return maxPitchValue;
-  }
-
-  // to find the minimum pitch value in this piece.
-  private int minPitchValue() {
-    int minPitchValue = -1;
-    for (Pitch p : Pitch.values()) {
-      if (p.getValue() < minPitchValue) {
-        minPitchValue = p.getValue();
-      }
-    }
-    return minPitchValue;
-  }
-
 
   /**
-   * @param lowestNote  The lowest note in this piece.
-   * @param highestNote The highest note in this piece.
-   * @return List<Note> </Note> of all the notes within the range of the higest and lowest notes.
+   * To generate a list of all the notes that are within the range of the highest and lowest notes
+   * in this MusicEditorModel.
+   * @return List<Note> </Note> of all the notes within the range of the highest and lowest notes
+   * that could be in this MusicEditorModel.
    */
-  private List<Note> getAllPossibleNotesInRange(Note lowestNote, Note highestNote) {
+  private List<Note> getAllPossibleNotesInRange() {
     List<Note> allPossibleNotesInRange = new ArrayList<>();
+    Note lowestNote = this.findExtreme(1);
+    Note highestNote = this.findExtreme(-1);
     // Stay within the octave of the lowest note first
-    for (int i = lowestNote.getPitch().getValue(); i <= this.maxPitchValue(); i += 1) {
+    for (int i = lowestNote.getPitch().getValue(); i <= highestNote.getPitch().getValue(); i += 1) {
       Note n1 = new Note(lowestNote.getPitch().getPitchBasedOnValue(i), lowestNote.getOctave());
       allPossibleNotesInRange.add(n1);
     }
@@ -305,7 +253,7 @@ public final class MusicEditorModel implements IMusicEditorModel {
       }
     }
     if (lowestNote != highestNote) {
-      for (int i = minPitchValue(); i <= highestNote.getPitch().getValue(); i += 1) {
+      for (int i = lowestNote.getPitch().getValue(); i <= highestNote.getPitch().getValue(); i += 1) {
         Note n3 = new Note(highestNote.getPitch().getPitchBasedOnValue(i), highestNote.getOctave());
         allPossibleNotesInRange.add(n3);
       }
@@ -316,11 +264,10 @@ public final class MusicEditorModel implements IMusicEditorModel {
   /**
    * @return String of the current state of this piece.
    */
-  public String setUpState() {
+  private String setUpState() {
     //StringBuilder builder = new StringBuilder();
     String finalStr = "";
-    List<Note> allNotesInRange = this.getAllPossibleNotesInRange(this.findLowestNoteInPiece(),
-            this.findHighestNoteInPiece());
+    List<Note> allNotesInRange = this.getAllPossibleNotesInRange();
     int size = beats.size() - 1;
     String stringSize = Integer.toString(size);
     for (char c : stringSize.toCharArray()) {
@@ -351,8 +298,7 @@ public final class MusicEditorModel implements IMusicEditorModel {
   }
 
   public List<Note> getNotes() {
-    return new ArrayList<>(this.getAllPossibleNotesInRange(
-            this.findLowestNoteInPiece(), this.findHighestNoteInPiece()));
+    return new ArrayList<>(this.getAllPossibleNotesInRange());
   }
 
 

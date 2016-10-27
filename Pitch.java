@@ -21,7 +21,8 @@ public enum Pitch {
   }
 
   /**
-   * @param value the value being passed to get the corresponding enum value.
+   * @param value the value being passed that matches up to one of the values of one of the
+   *              values of this enum.
    * @return Pitch that corresponds to the given value.
    */
   public Pitch getPitchBasedOnValue(int value) {
@@ -56,7 +57,7 @@ public enum Pitch {
   }
 
   /**
-   * @return String of the specified pitch value.
+   * @return Returns a string of the specified value.
    */
   @Override
   public String toString() {
