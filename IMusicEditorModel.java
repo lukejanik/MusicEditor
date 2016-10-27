@@ -1,52 +1,56 @@
 package cs3500.music.model;
 
-/**
- * Created by ashnashah on 10/16/16.
- */
+import cs3500.music.MusicEditor;
 
 import java.util.List;
 
 /**
- * This is the interface of the MusicEditorModel.
+ * This is the interface for an MusicEditorModel.
  */
 public interface IMusicEditorModel {
-  /**
-   * To write the given note that will be part of the given piece.
-   *
-   * @param sym   note that will be written.
-   * @param piece piece that the note will be written to.
-   */
-  public Piece writeMusic(AMusicSymbol sym, Piece piece);
 
   /**
-   * To edit a piece of music by replacing a certain note with a new note.
+   * Write adds the given note to the given piece one note at a time.
    *
-   * @param oldSym the note that is to be replaced.
-   * @param newSym the note that the oldNote will be replaced with.
-   * @param piece  the piece that is to be edited. -- pass a list<Pieces> </Pieces>
+   * @param note  The note to add to the piece
    */
-  public void edit(AMusicSymbol oldSym, AMusicSymbol newSym, Piece piece);
+  void write(Note note);
 
   /**
-   * To remove the given note from the given piece. If there is only one note in that beat, all the
-   * subsequent notes should be shifted back.
+   * Edit replaces an existing note with a new note at a given beat number.
+   * If the noteToReplace does not exist at the given beatNumber, an IllegalArgumentExcepition
+   * is thrown. If the beat number doesn't exist in the piece, an IllegalArgumentException is
+   * also thrown.
    *
-   * @param sym   note to be removed.
-   * @param piece piece that the note will be removed from.
+   * @param noteToReplace The note at the beat number
    */
-  public void remove(AMusicSymbol sym, Piece piece) throws IllegalArgumentException;
+  void edit(Note noteToReplace, Note noteToAdd);
 
   /**
-   * To combine pieces of music to be played either simultaneously or consecutively.
+   * Removes the given note from the given piece.
+   * If the note leaves empty spaces in the piece, subsequent notes shift to fill the piece.
+   * Otherwise the the piece stays the same and no notes are shifted.
    *
-   * @param type       The type of combination you want to make (simultaneous or consecutive).
-   * @param morePieces The pieces to be combined.
+   * @param note  The note to be removed.
    */
-  public Piece combine(CombineType type, List<Piece> morePieces);
+  void remove(Note note);
 
   /**
-   * @param piece The piece that is part of the music editor.
-   * @return String showing the current state of the music editor.
+   * Combine multiple pieces together either simultaneously or consecutively.
+   * If pieces are combined simultaneously merged the two pieces together.
+   * If pieces are combined consecutively, the pieces are combined in the order of the of
+   * the indices of the given arraylist.
+   *
+   * @param piecesToCombine An arraylist of all of the pieces to combine.
+   * @param type            Either simultaneous or sequential, how the pieces are combined.
+   * @return Piece which is a combination of the given pieces
    */
-  public String getEditorState(Piece piece);
+  MusicEditorModel combine(List<MusicEditorModel> piecesToCombine, CombineType type);
+
+  /**
+   * Returns the string representation of the current editor.
+   * @return String which is the state.
+   */
+  String getEditorState();
+
 }
