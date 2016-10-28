@@ -69,9 +69,9 @@ public final class MusicEditorModel implements IMusicEditorModel {
    */
   @Override
   public MusicEditorModel combine(List<MusicEditorModel> models, CombineType type) {
+    MusicEditorModel combo = new MusicEditorModel();
     switch (type) {
       case CONSECUTIVE:
-        MusicEditorModel combo = new MusicEditorModel();
         combo.appendModels(models);
         return combo;
 
@@ -82,12 +82,11 @@ public final class MusicEditorModel implements IMusicEditorModel {
             maxLength = p.size();
           }
         }
-        MusicEditorModel simultaneousModel = new MusicEditorModel();
-        simultaneousModel.addBeats(maxLength);
+        combo.addBeats(maxLength);
         for (MusicEditorModel m : models) {
-          simultaneousModel.addNotesToModel(m);
+          combo.addNotesToModel(m);
         }
-        return simultaneousModel;
+        return combo;
       default:
         throw new IllegalArgumentException("Invalid combination type");
     }
@@ -110,13 +109,13 @@ public final class MusicEditorModel implements IMusicEditorModel {
    * @param note
    */
   private void addNote(Note note) {
-    for (int i = note.getStartBeat(); i < note.getStartBeat() + note.getDuration(); i += 1) {
-      if (i >= beats.size()) {
+    if (note.getStartBeat() + note.getDuration() >= beats.size()) {
+      for (int i = beats.size(); i < note.getStartBeat() + note.getDuration(); i += 1) {
         beats.add(new Beat());
       }
-      if (beats.get(i).containsNote(note)) {
-        // do nothing
-      }
+
+    }
+    for (int i = note.getStartBeat(); i < note.getStartBeat() + note.getDuration(); i += 1) {
       beats.get(i).addNoteToBeat(note);
     }
   }
@@ -145,9 +144,7 @@ public final class MusicEditorModel implements IMusicEditorModel {
       throw new IllegalArgumentException("The newNote must have the same startBeat " +
               "as the oldNote.");
     }
-    for (int i = oldNote.getStartBeat(); i < oldNote.getStartBeat() + oldNote.getDuration(); i += 1) {
-      beats.get(i).removeNoteFromBeat(oldNote);
-    }
+    this.remove(oldNote);
     this.addNote(newNote);
   }
 
@@ -297,7 +294,7 @@ public final class MusicEditorModel implements IMusicEditorModel {
     return new ArrayList<>(this.beats);
   }
 
-  public List<Note> getNotes() {
+  public List<Note> getNoteRange() {
     return new ArrayList<>(this.getAllPossibleNotesInRange());
   }
 

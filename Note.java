@@ -4,13 +4,26 @@ import java.util.Comparator;
 import java.util.Objects;
 
 /**
- * Created by ashnashah on 10/17/16.
+ * To represent a note.
  */
-// To represent a note.
 public class Note implements Comparable<Note> {
+  /**
+   * Duration is how many beats this note will sustain. A duration must be greater than zero.
+   */
   private int duration;
+  /**
+   * startBeat is the beat at which this note starts. startBeat must be greater than or equal
+   * to zero.
+   */
   private int startBeat;
+  /**
+   * Pitch is the musical key that this note represents. A Pitch is one of 12 unique keys.
+   */
   private final Pitch pitch;
+  /**
+   * Octave is the musical octave that this note represents. An octave can be any integer,
+   * negative or positive.
+   */
   private final int octave;
 
   /**
@@ -21,10 +34,7 @@ public class Note implements Comparable<Note> {
    * @param octave the octave of this note.
    */
   public Note(int duration, int startBeat, Pitch pitch, int octave) {
-    if (octave < 0) {
-      throw new IllegalArgumentException("octave can't be negative");
-    }
-    if (duration < 0 || startBeat < 0) {
+    if (duration <= 0 || startBeat < 0) {
       throw new IllegalArgumentException("duration or startBeat can't be negative");
     }
     this.duration = duration;

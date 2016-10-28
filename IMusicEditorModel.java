@@ -1,5 +1,9 @@
 package cs3500.music.model;
 
+import cs3500.music.MusicEditor;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -8,24 +12,21 @@ import java.util.List;
 public interface IMusicEditorModel {
 
   /**
-   * Write adds the given note to the MusicEditorModel one note at a time.
+   * Write adds the given note to the given piece one note at a time.
    *
-   * @param note  The note to add to the MusicEditorModel.
+   * @param note  The note to add to the piece
    */
   void write(Note note);
 
   /**
    * Edit replaces an existing note with a new note at a given beat number.
-   * If the noteToReplace does not exist at the given beatNumber, an IllegalArgumentException
-   * is thrown. If the beat number doesn't exist in the MusicEditorModel, an
-   * IllegalArgumentException is also thrown.
+   * If the noteToReplace does not exist at the given beatNumber, an IllegalArgumentExcepition
+   * is thrown. If the beat number doesn't exist in the piece, an IllegalArgumentException is
+   * also thrown.
    *
-   * @param noteToReplace The note at the beat number that is to be replaced.
-   * @param noteToAdd The note that is to replace the old note.
-   * @throws IllegalArgumentException An exception is thrown if the noteToReplace does not exist or
-   * the beat number does not exist.
+   * @param noteToReplace The note at the beat number
    */
-  void edit(Note noteToReplace, Note noteToAdd) throws IllegalArgumentException;
+  void edit(Note noteToReplace, Note noteToAdd);
 
   /**
    * Removes the given note from the given piece.
@@ -53,5 +54,9 @@ public interface IMusicEditorModel {
    * @return String which is the state.
    */
   String getEditorState();
+
+  List<Beat> getBeats();
+  List<Note> getNoteRange();
+
 
 }
