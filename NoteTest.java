@@ -1,3 +1,6 @@
+/**
+ * Created by ashnashah on 10/28/16.
+ */
 package cs3500.music.model;
 
 import org.junit.Test;
@@ -62,11 +65,13 @@ public class NoteTest {
    */
   @Test(expected = IllegalArgumentException.class)
   public void testInvalidDuration() {
-    Note badNote2 = new Note(0, 4, Pitch.C, 5);
+    Note badNote2 = new Note(-10, 4, Pitch.C, 5);
   }
 
   /**
    * Duration of 0, but duration must be a positive integer.
+   *
+   * FIXME
    */
   @Test(expected = IllegalArgumentException.class)
   public void testInvalidDuration2() {
