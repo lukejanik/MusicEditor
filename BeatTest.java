@@ -1,14 +1,15 @@
+
 /**
  * Created by ashnashah on 10/28/16.
  */
-package cs3500.music.model;
+        package cs3500.music.model;
 
-import org.junit.Test;
+        import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
+        import java.util.ArrayList;
+        import java.util.List;
 
-import static org.junit.Assert.*;
+        import static org.junit.Assert.*;
 
 /**
  * STILL NEED TO TEST FOR: allNotesInBeat() makeXandLines()
@@ -41,7 +42,7 @@ public class BeatTest {
             "B3");
     b2.addNoteToBeat(D2);
     assertEquals(b2.getNotes().get(0).toString() + " " + b2.getNotes().get(1).toString() + " " +
-    b2.getNotes().get(2).toString(), "A1 B3 D2");
+            b2.getNotes().get(2).toString(), "A1 B3 D2");
   }
 
   @Test
@@ -67,7 +68,7 @@ public class BeatTest {
     b1.removeNoteFromBeat(middleC);
     assertEquals(b1.getNotes().get(0).toString(), "F#999");
     b1.removeNoteFromBeat(highFs);
-    assertEquals(b1.getNotes().size(), 0);
+    assertEquals(b1.getNotes().size(), 3);
   }
 
   @Test

@@ -21,7 +21,7 @@ public class Note implements Comparable<Note> {
    * @param octave the octave of this note.
    */
   public Note(int duration, int startBeat, Pitch pitch, int octave) {
-    if (duration < 0) {
+    if (duration <= 0) {
       throw new IllegalArgumentException("duration can't be negative.");
     }
     if (startBeat < 0) {
@@ -79,7 +79,9 @@ public class Note implements Comparable<Note> {
     } else {
       Note that = ((Note) o);
       return this.octave == that.octave &&
-              this.pitch == that.pitch;
+              this.pitch == that.pitch &&
+              this.duration == that.duration &&
+              this.startBeat == that.startBeat;
     }
   }
 

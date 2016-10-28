@@ -23,7 +23,7 @@ public final class MusicEditorModel implements IMusicEditorModel {
   // The beats in this piece of music.
   private List<Beat> beats;
 
-  MusicEditorModel() {
+  public MusicEditorModel() {
     this.beats = new ArrayList<>();
   }
 
@@ -72,24 +72,40 @@ public final class MusicEditorModel implements IMusicEditorModel {
     MusicEditorModel combo = new MusicEditorModel();
     switch (type) {
       case CONSECUTIVE:
-        combo.appendModels(models);
+        combo = this.combineSequential(models);
         return combo;
 
       case SIMULTANEOUS:
-        int maxLength = 0;
+        int maxLength = this.beats.size();
         for (MusicEditorModel p : models) {
           if (p.size() > maxLength) {
             maxLength = p.size();
           }
         }
-        combo.addBeats(maxLength);
+        this.addBeats(maxLength - this.beats.size());
         for (MusicEditorModel m : models) {
-          combo.addNotesToModel(m);
+          this.addNotesToModel(m);
         }
-        return combo;
+        return this;
       default:
         throw new IllegalArgumentException("Invalid combination type");
     }
+  }
+
+  private MusicEditorModel combineSequential(List<MusicEditorModel> piecesToCombine) {
+
+    int size = this.beats.size();
+    for (int i = 0; i < piecesToCombine.size(); i++) {
+      for (Beat beat : piecesToCombine.get(i).beats) {
+        for (Note p : beat.getNotes()) {
+          Note n = new Note(p.getDuration(), p.getStartBeat() + size, p.getPitch(), p.getOctave());
+          this.addNote(n);
+        }
+      }
+      size += piecesToCombine.get(i).beats.size();
+    }
+
+    return this;
   }
 
   /**
@@ -211,10 +227,10 @@ public final class MusicEditorModel implements IMusicEditorModel {
   }
 
   // To find the lowest or highest note in this MusicEditorModel.
-  private Note findExtreme(int compValue) {
+  public Note findExtreme(int compValue) {
     List<Note> allNotesInPiece = new ArrayList<>();
     for (int i = 0; i < beats.size(); i += 1) {
-      allNotesInPiece.addAll(beats.get(i).allNotesInBeat(i));
+      allNotesInPiece.addAll(beats.get(i).getNotes());
     }
     Note extremeNote = allNotesInPiece.get(0);
     for (int i = 0; i < allNotesInPiece.size(); i += 1) {
@@ -231,30 +247,39 @@ public final class MusicEditorModel implements IMusicEditorModel {
    * @return List<Note> </Note> of all the notes within the range of the highest and lowest notes
    * that could be in this MusicEditorModel.
    */
-  private List<Note> getAllPossibleNotesInRange() {
+  public List<Note> getAllPossibleNotesInRange() {
     List<Note> allPossibleNotesInRange = new ArrayList<>();
     Note lowestNote = this.findExtreme(1);
     Note highestNote = this.findExtreme(-1);
+    int loPitch = lowestNote.getPitch().getValue() - 1;
+    int loOctave = lowestNote.getOctave();
+    int hiPitch = highestNote.getPitch().getValue() - 1;
+    int hiOctave = highestNote.getOctave();
+
+
+
     // Stay within the octave of the lowest note first
-    for (int i = lowestNote.getPitch().getValue(); i <= highestNote.getPitch().getValue(); i += 1) {
-      Note n1 = new Note(lowestNote.getPitch().getPitchBasedOnValue(i), lowestNote.getOctave());
-      allPossibleNotesInRange.add(n1);
-    }
-    for (int j = lowestNote.getOctave() + 1; j < highestNote.getOctave(); j += 1) {
-      int nextOctave = j;
-      if (nextOctave < highestNote.getOctave()) {
-        for (Pitch p : Pitch.values()) {
-          Note n2 = new Note(p, nextOctave);
-          allPossibleNotesInRange.add(n2);
-        }
+    if (loOctave == hiOctave) {
+      for (int i = loPitch; i <= hiPitch; i++) {
+        allPossibleNotesInRange.add(new Note(1, 0, pitches().get(i), loOctave));
       }
     }
-    if (lowestNote != highestNote) {
-      for (int i = lowestNote.getPitch().getValue(); i <= highestNote.getPitch().getValue(); i += 1) {
-        Note n3 = new Note(highestNote.getPitch().getPitchBasedOnValue(i), highestNote.getOctave());
-        allPossibleNotesInRange.add(n3);
+
+    // FIRST OCTAVE
+    for (int i = loPitch; i < pitches().size(); i++) {
+      allPossibleNotesInRange.add(new Note(1, 0, pitches().get(i), loOctave));
+    }
+    // MIDDLE OCTAVES
+    for (int i = loOctave + 1; i < hiOctave; i++) {
+      for(Pitch p: pitches()) {
+        allPossibleNotesInRange.add(new Note(1, 0, p, i));
       }
     }
+    // LAST OCTAVE
+    for (int i = 0; i <= hiPitch; i++) {
+      allPossibleNotesInRange.add(new Note(1, 0, pitches().get(i), hiOctave));
+    }
+
     return allPossibleNotesInRange;
   }
 
@@ -296,6 +321,21 @@ public final class MusicEditorModel implements IMusicEditorModel {
 
   public List<Note> getNoteRange() {
     return new ArrayList<>(this.getAllPossibleNotesInRange());
+  }
+
+  /**
+   * Pitches returns an arraylist of all of the pitches in the enum pitches.
+   * This is required because it allows for easy traversal and access to different
+   * parts the pitches enumeration.
+   *
+   * @return ArrayList which is the list of pitches.
+   */
+  private ArrayList<Pitch> pitches() {
+    ArrayList<Pitch> pitches = new ArrayList<>();
+    for (Pitch t : Pitch.values()) {
+      pitches.add(t);
+    }
+    return pitches;
   }
 
 
