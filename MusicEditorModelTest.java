@@ -4,6 +4,7 @@ import cs3500.music.MusicEditor;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
@@ -293,6 +294,7 @@ public class MusicEditorModelTest {
 
   @Test
   public void testCombine2PiecesSimulEasy() {
+    MusicEditorModel combo = new MusicEditorModel();
     MusicEditorModel model1 = new MusicEditorModel();
     MusicEditorModel model2 = new MusicEditorModel();
     Note A4 = new Note(2, 0, Pitch.A, 4);
@@ -300,10 +302,9 @@ public class MusicEditorModelTest {
     model1.write(A4);
     model2.write(C4);
     ArrayList<MusicEditorModel> list = new ArrayList<>();
+    list.add(model1);
     list.add(model2);
-    MusicEditorModel combo = model1.combine(list, CombineType.SIMULTANEOUS);
-   // assertEquals(combo.getBeats().size(), 2);
-   // assertEquals(combo.getBeats().get(1).getNotes().size(), 2);
+    combo = combo.combine(list, CombineType.SIMULTANEOUS);
     System.out.print(combo.getEditorState());
   }
 
@@ -313,8 +314,8 @@ public class MusicEditorModelTest {
     Note G3 = new Note(2, 1, Pitch.G, 3);
     model.write(G3);
     model.write(Fs4);
-    assertEquals(model.findExtreme(1), G3);
-    assertEquals(model.findExtreme(-1), Fs4);
+    assertEquals(model.findExtreme(-1), G3);
+    assertEquals(model.findExtreme(1), Fs4);
   }
 
   @Test
@@ -323,16 +324,80 @@ public class MusicEditorModelTest {
     Note G3 = new Note(2, 1, Pitch.G, 3);
     model.write(G3);
     model.write(Fs4);
-    assertEquals(model.getNoteRange().toString(), "[G3, G#3, A3, A#3, B3, C4, C#4, D4, " +
-            "D#4, E4, F4, F#4]");
-    assertEquals(model.getEditorState(), "   G3  G#3   A3  A#3   B3   C4  C#4   D4  D#4   E4   F4  F#4 \n" +
-            "0                                                            \n" +
-            "1  X                                                         \n" +
-            "2  |                                                      X  \n" +
-            "3                                                         |  \n" +
-            "4                                                         |  \n" +
-            "5                                                         |  \n" +
-            "6                                                         |  ");
+    System.out.print(model.getAllPossibleNotesInRange());
   }
 
+  @Test
+  public void testGetAllPossibleNotesInRange2() {
+    Note A2 = new Note(5, 2, Pitch.A, 2);
+    Note Gs3 = new Note(2, 1, Pitch.GSharp, 3);
+    Note G1 = new Note(2, 1, Pitch.G, 1);
+    Note F3 = new Note(2, 1, Pitch.F, 3);
+    Note B2 = new Note(2, 1, Pitch.B, 2);
+    model.write(A2);
+    model.write(Gs3);
+    model.write(G1);
+    model.write(F3);
+    model.write(B2);
+    assertEquals(model.getAllPossibleNotesInRange().toString(), "[G1, G#1, A1, A#1, B1, C2, C#2, " +
+            "D2, D#2, E2, F2, F#2, G2, G#2, A2, A#2, B2, C3, C#3, D3, D#3, E3, F3, F#3, G3, G#3]");
+
+    //  assertEquals(model.getAllPossibleNotesInRange().toString(), "");
+  }
+
+  @Test
+  public void testCombineSeq() {
+    MusicEditorModel model2 = new MusicEditorModel();
+    MusicEditorModel model3 = new MusicEditorModel();
+    MusicEditorModel model4 = new MusicEditorModel();
+    MusicEditorModel combo = new MusicEditorModel();
+
+    Note G2 = new Note(1, 1, Pitch.G, 2);
+    Note B2 = new Note(2, 3, Pitch.B, 2);
+
+    Note Gs = new Note(1, 1, Pitch.GSharp, 2);
+    Note A2 = new Note(3, 2, Pitch.A, 3);
+
+    Note Ds = new Note(3, 2, Pitch.DSharp, 3);
+    Note A3 = new Note(2, 3, Pitch.A, 3);
+
+    model2.write(G2);
+    model2.write(B2);
+
+    model3.write(Gs);
+    model3.write(A2);
+
+    model4.write(Ds);
+    model4.write(A3);
+
+    List<MusicEditorModel> models = new ArrayList<>();
+    models.add(model2);
+    models.add(model3);
+    models.add(model4);
+    combo = combo.combine(models, CombineType.CONSECUTIVE);
+    System.out.print(combo.getEditorState());
+
+  }
+
+  @Test
+  public void testCombine2PiecesSimulHARD() {
+    MusicEditorModel combo = new MusicEditorModel();
+    MusicEditorModel model1 = new MusicEditorModel();
+    MusicEditorModel model2 = new MusicEditorModel();
+    Note A4 = new Note(2, 0, Pitch.A, 4);
+    Note A5 = new Note(6, 0, Pitch.A, 5);
+    Note B5 = new Note(4, 2, Pitch.B, 5);
+    Note Gs4 = new Note(1, 0, Pitch.GSharp, 4);
+    Note C4 = new Note(1, 1, Pitch.C, 4);
+    model1.write(A4);
+    model1.write(A5);
+    model1.write(B5);
+    model1.write(Gs4);
+    model2.write(C4);
+    ArrayList<MusicEditorModel> list = new ArrayList<>();
+    list.add(model1);
+    list.add(model2);
+    combo = combo.combine(list, CombineType.SIMULTANEOUS);
+    System.out.print(combo.getEditorState());
+  }
 }

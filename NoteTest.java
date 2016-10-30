@@ -79,4 +79,18 @@ public class NoteTest {
   }
 
 
+  @Test
+  public void testCompareTo() {
+    Note n1 = new Note(1, 0, Pitch.A, 2);
+    Note n2 = new Note(1, 0, Pitch.F, 1);
+    Note n3 = new Note(1, 0, Pitch.FSharp, 2);
+    Note n4 = new Note(1, 0, Pitch.A, 2);
+    assertEquals(n1.compareTo(n2), 1);
+    assertEquals(n2.compareTo(n1), -1);
+    assertEquals(n1.compareTo(n3), 1);
+    assertEquals(n2.compareTo(n3), -1);
+    assertEquals(n3.compareTo(n1), -1);
+    assertEquals(n1.compareTo(n4), -1);
+  }
+
 }

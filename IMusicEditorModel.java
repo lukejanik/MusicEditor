@@ -1,9 +1,5 @@
 package cs3500.music.model;
 
-import cs3500.music.MusicEditor;
-
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -55,7 +51,18 @@ public interface IMusicEditorModel {
    */
   String getEditorState();
 
+  /**
+   * getBeats needs to be public so that the Controller can have access to the model's beats and
+   * notes.
+   * @return List<Beat> </Beat> the model's list of beats.
+   */
   List<Beat> getBeats();
+
+  /**
+   * getNoteRange returns all of the notes between the model's lowest note and highest note. The
+   * Controller will require access to this information to give to the View.
+   * @return List<Note> </Note> the model's note range.
+   */
   List<Note> getNoteRange();
 
 
